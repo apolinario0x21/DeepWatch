@@ -1,0 +1,17 @@
+# Arquivo de variáveis de ambiente
+.env
+.env.example
+
+# Binários e executáveis compilados
+goapp
+
+# Diretórios de dependências do Go (caso use vendor)
+vendor/
+
+# Arquivos de IDEs e editores
+.idea/
+.vscode/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db

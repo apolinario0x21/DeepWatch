@@ -1,0 +1,55 @@
+services:
+  goapp:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring
+    depends_on:
+      - alertmanager
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env
+    networks:
+      - monitoring
+
+  alertmanager:
+    build:
+      context: .
+      dockerfile: alertmanager/Dockerfile
+      args:
+        - WEBHOOK_URL=${WEBHOOK_URL}
+    ports:
+      - "9093:9093"
+    environment:
+      - TZ=America/Sao_Paulo
+    env_file:
+      - ./.env
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus-data:

@@ -1,0 +1,20 @@
+groups:
+  - name: goapp_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum by (path) (increase(api_requests_total{status_code=~"5.."}[2m])) > 10
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta taxa de erros na API (path: {{ $labels.path }})"
+          description: "Mais de 10 erros 5xx detectados em 2 minutos. Endpoint: {{ $labels.path }}."
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, sum(rate(api_request_duration_seconds_bucket[2m])) by (le, path)) > 0.5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta latência P99 detectada (path: {{ $labels.path }})"
+          description: "O 99º percentil da latência está acima de 500ms no endpoint {{ $labels.path }}. Valor atual: {{ $value }}s."
