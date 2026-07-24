@@ -6,7 +6,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /goapp .
+RUN go build -o /goapp ./cmd/deepwatch
 
 EXPOSE 8080
 
