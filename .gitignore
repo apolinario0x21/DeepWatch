@@ -2,9 +2,10 @@
 # .env.example É versionado; apenas .env fica ignorado.
 .env
 
-# Binários e executáveis compilados
-goapp
-deepwatch
+# Binários e executáveis compilados (ancorados na raiz para não casar com
+# o diretório cmd/deepwatch/).
+/goapp
+/deepwatch
 /dist/
 
 # Cobertura de testes
