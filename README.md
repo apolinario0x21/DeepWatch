@@ -41,50 +41,75 @@ Projeto de Observabilidade com Go, Prometheus & Grafana. Este projeto demonstra 
 
 ## 🔬 Detalhes Técnicos
 
+<details>
 <summary><strong>Endpoints da API</strong></summary>
 
-| Método | Endpoint  | Descrição                                 |
-| :----- | :-------- | :---------------------------------------- |
-| `GET`  | `/`       | Endpoint principal para testes de carga.  |
+| Método | Endpoint  | Descrição                                  |
+| :----- | :-------- | :----------------------------------------- |
+| `GET`  | `/`       | Endpoint principal para testes de carga.   |
 | `GET`  | `/data`   | Simula um endpoint com latência controlada.|
 | `GET`  | `/error`  | Endpoint que sempre retorna um erro 500.   |
-| `GET`  | `/health` | Retorna o status de saúde da aplicação.   |
-| `GET`  | `/metrics`| Expõe as métricas para o Prometheus.        |
+| `GET`  | `/health` | Retorna o status de saúde (`200 OK` / `503`).|
+| `GET`  | `/metrics`| Expõe as métricas para o Prometheus.       |
+
+</details>
 
 
 ## ⚠️ Alertas Configurados
+
+<details>
 <summary><strong>🔴 HighErrorRate</strong></summary>
 
-- Condição: > 10 erros 5xx em 2 minutos
-- Severidade: Critical
-- Duração: 10 segundos
+- **Condição:** > 10 erros 5xx em 2 minutos
+- **Severidade:** Critical
+- **Duração:** 10 segundos
 
+</details>
+
+<details>
 <summary><strong>🔴 HighLatency</strong></summary>
 
 - **Condição:** P99 > 500ms
 - **Severidade:** Critical
 - **Duração:** 1 minuto
 
+</details>
+
 
 ## 📊 Métricas Capturadas
+
+<details>
 <summary><strong>Métricas de Requisição</strong></summary>
 
-- api_requests_total - Total de requisições HTTP
-- api_request_duration_seconds - Duração das requisições (histograma)
+- `api_requests_total` — Total de requisições HTTP
+- `api_request_duration_seconds` — Duração das requisições (histograma)
 
+</details>
+
+<details>
 <summary><strong>Métricas de Sistema</strong></summary>
 
-- api_goroutines_count - Número de goroutines ativas
-- api_memory_usage_bytes - Uso de memória (HeapAlloc)
-- api_uptime_seconds - Tempo de atividade da aplicação
+- `api_goroutines_count` — Número de goroutines ativas
+- `api_memory_usage_bytes` — Uso de memória (HeapAlloc)
+- `api_uptime_seconds` — Tempo de atividade da aplicação
 
+</details>
+
+<details>
 <summary><strong>Métricas de Dependências</strong></summary>
 
-- api_external_dependencies_duration_seconds - Latência de APIs externas
+- `api_external_dependencies_duration_seconds` — Latência de APIs externas
 
+</details>
+
+<details>
 <summary><strong>Health Check</strong></summary>
 
-- api_healthcheck_status - Status de saúde (1=UP, 0=DOWN)
+- `api_healthcheck_status` — Status de saúde (1=UP, 0=DOWN). Reflete o estado
+  real da aplicação: cai para `0` durante o graceful shutdown, quando o
+  endpoint `/health` passa a responder `503`.
+
+</details>
 
 
 
@@ -93,7 +118,7 @@ Projeto de Observabilidade com Go, Prometheus & Grafana. Este projeto demonstra 
 1.  Clone este repositório:
     ```bash
     git clone git@github.com:apolinario0x21/DeepWatch.git
-    cd go-metrics
+    cd DeepWatch
     ```
 
 2.  Crie um arquivo `.env` a partir do exemplo:

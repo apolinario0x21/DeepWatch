@@ -1,9 +1,15 @@
-# Arquivo de variáveis de ambiente
+# Arquivo de variáveis de ambiente (nunca commitar segredos).
+# .env.example É versionado; apenas .env fica ignorado.
 .env
-.env.example
 
 # Binários e executáveis compilados
 goapp
+deepwatch
+/dist/
+
+# Cobertura de testes
+coverage.out
+coverage.html
 
 # Diretórios de dependências do Go (caso use vendor)
 vendor/
