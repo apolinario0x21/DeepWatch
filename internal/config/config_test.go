@@ -70,18 +70,21 @@ func TestGetDurationInvalidFallsBack(t *testing.T) {
 }
 
 func TestParseLevel(t *testing.T) {
-	cases := map[string]slog.Level{
-		"debug":   slog.LevelDebug,
-		"INFO":    slog.LevelInfo,
-		" warn ":  slog.LevelWarn,
-		"warning": slog.LevelWarn,
-		"error":   slog.LevelError,
-		"":        slog.LevelInfo,
-		"unknown": slog.LevelInfo,
+	cases := []struct {
+		in   string
+		want slog.Level
+	}{
+		{"debug", slog.LevelDebug},
+		{"INFO", slog.LevelInfo},
+		{" warn ", slog.LevelWarn}, // whitespace deve ser aparado
+		{"warning", slog.LevelWarn},
+		{"error", slog.LevelError},
+		{"", slog.LevelInfo},
+		{"unknown", slog.LevelInfo},
 	}
-	for in, want := range cases {
-		if got := parseLevel(in); got != want {
-			t.Errorf("parseLevel(%q) = %v, esperado %v", in, got, want)
+	for _, tc := range cases {
+		if got := parseLevel(tc.in); got != tc.want {
+			t.Errorf("parseLevel(%q) = %v, esperado %v", tc.in, got, tc.want)
 		}
 	}
 }
