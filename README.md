@@ -1,5 +1,9 @@
 # DeepWatch
 
+[![CI](https://github.com/apolinario0x21/DeepWatch/actions/workflows/ci.yml/badge.svg)](https://github.com/apolinario0x21/DeepWatch/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/apolinario0x21/DeepWatch)](go.mod)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
@@ -17,6 +21,8 @@ Projeto de Observabilidade com Go, Prometheus & Grafana. Este projeto demonstra 
 | Visualization | Grafana                            |
 | Alerting      | Alertmanager                       |
 | Orchestration | Docker & Docker Compose                     |
+| CI/CD         | GitHub Actions                     |
+| Qualidade     | golangci-lint, go test -race       |
 | Load Testing  | Hey (ferramenta de teste de carga) |
 
 
@@ -38,6 +44,26 @@ Projeto de Observabilidade com Go, Prometheus & Grafana. Este projeto demonstra 
 | `Grafana`      | `http://localhost:3000`    | 
 | `Alertmanager` | `http://localhost:9093`    |
 | `WebHook`      | `https://webhook.site`    |
+
+## 🗂 Estrutura do Projeto
+
+```
+DeepWatch/
+├── cmd/deepwatch/          # entrypoint (main mínimo: config + composição)
+├── internal/
+│   ├── config/             # leitura de configuração via variáveis de ambiente
+│   ├── metrics/            # definição/registro das métricas + middleware
+│   ├── handlers/           # handlers de negócio + health check
+│   └── server/             # http.Server, rotas e graceful shutdown
+├── prometheus/             # config do Prometheus + regras de alerta
+├── alertmanager/           # config do Alertmanager (webhook via envsubst)
+├── grafana/provisioning/   # datasource + dashboard (Golden Signals)
+├── .github/workflows/      # pipelines de CI e release (ghcr.io)
+├── Dockerfile              # multi-stage, binário estático, distroless não-root
+├── docker-compose.yml      # orquestração da stack com healthchecks
+├── Makefile                # atalhos de build, test, lint, up/down…
+└── .golangci.yml           # configuração do linter
+```
 
 ## 🔬 Detalhes Técnicos
 
@@ -130,14 +156,50 @@ Projeto de Observabilidade com Go, Prometheus & Grafana. Este projeto demonstra 
 
 4.  Execute a stack completa com Docker Compose:
     ```bash
-    docker-compose up -d --build
+    docker compose up -d --build
+    # ou, com o Makefile:
+    make up
     ```
+    A aplicação sobe em uma imagem mínima (distroless, ~22MB) rodando como
+    usuário **não-root**, e todos os serviços possuem `healthcheck`.
 
 5.  Acesse os serviços:
     - **Sua Aplicação Go:** `http://localhost:8080`
     - **Prometheus:** `http://localhost:9090`
     - **Grafana:** `http://localhost:3000` (usuário: admin, senha: a que você definiu no `.env`)
     - **Alertmanager:** `http://localhost:9093`
+
+    > As portas do host são configuráveis (`APP_HOST_PORT`, `GRAFANA_HOST_PORT`,
+    > etc.) caso já estejam em uso na sua máquina — veja o `.env.example`.
+
+## 🧑‍💻 Desenvolvimento
+
+Requer **Go 1.26+**. Os principais comandos estão no `Makefile` (rode `make help`):
+
+| Comando          | Descrição                                              |
+| :--------------- | :----------------------------------------------------- |
+| `make run`       | Executa a aplicação localmente                         |
+| `make build`     | Compila o binário estático em `./bin`                  |
+| `make test`      | Testes com race detector (`go test ./... -race`)       |
+| `make cover`     | Cobertura (`coverage.out` + `coverage.html`)           |
+| `make lint`      | Análise estática com `golangci-lint`                   |
+| `make fmt`       | Formata o código (`gofmt -s`)                          |
+| `make docker-build` | Constrói a imagem Docker da aplicação               |
+| `make up` / `make down` | Sobe / derruba a stack completa                 |
+
+Os pacotes de negócio são cobertos por testes unitários (`net/http/httptest`
+e `testutil` do `client_golang`), exercitando handlers, health check,
+middleware de métricas, configuração e o graceful shutdown.
+
+## 🔄 CI/CD
+
+O projeto usa **GitHub Actions**:
+
+- **CI** (`.github/workflows/ci.yml`): a cada push/PR na `main` roda
+  `go build`, `go vet`, `golangci-lint` e `go test -race -cover`, além de um
+  `docker build` (sem push), com cache de módulos.
+- **Release** (`.github/workflows/release.yml`): ao criar uma tag `v*`,
+  publica a imagem em `ghcr.io/apolinario0x21/deepwatch`.
 
 ## 📊 Dashboards
 
