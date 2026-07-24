@@ -6,6 +6,7 @@
 # o diretório cmd/deepwatch/).
 /goapp
 /deepwatch
+/bin/
 /dist/
 
 # Cobertura de testes
