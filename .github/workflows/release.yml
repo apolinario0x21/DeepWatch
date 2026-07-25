@@ -31,7 +31,7 @@ jobs:
       # metadata-action normaliza o nome da imagem para minúsculas e gera as tags.
       - name: Metadados da imagem
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
