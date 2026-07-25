@@ -1,6 +1,7 @@
 # DeepWatch
 
 [![CI](https://github.com/apolinario0x21/DeepWatch/actions/workflows/ci.yml/badge.svg)](https://github.com/apolinario0x21/DeepWatch/actions/workflows/ci.yml)
+[![Security](https://github.com/apolinario0x21/DeepWatch/actions/workflows/security.yml/badge.svg)](https://github.com/apolinario0x21/DeepWatch/actions/workflows/security.yml)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/apolinario0x21/DeepWatch)](go.mod)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -11,6 +12,27 @@
 
 ## 📖 Sobre o Projeto
 Projeto de Observabilidade com Go, Prometheus & Grafana. Este projeto demonstra a implementação de um sistema completo de monitoramento e observabilidade para uma aplicação escrita em Go. As métricas são expostas pela aplicação, coletadas pelo Prometheus, visualizadas em dashboards no Grafana e configuradas para enviar alertas via Alertmanager.
+
+## 🧒 Explicando de Forma Simples (para leigos)
+
+Nunca mexeu com isso antes? Sem problema. Imagine que o **DeepWatch é como o painel
+do seu carro** 🚗:
+
+- A **aplicação Go** é o *motor* — é o programa que faz o trabalho de verdade.
+- O **Prometheus** é o *sensor* — de tempos em tempos ele "espia" o motor e anota
+  números: quantas visitas chegaram, se algo deu erro, quanta memória está sendo usada.
+- O **Grafana** é o *painel de instrumentos* — pega esses números e mostra em
+  gráficos bonitos e coloridos, fáceis de entender.
+- O **Alertmanager** é a *luzinha de aviso* — se algo esquentar demais (muitos erros
+  ou lentidão), ele acende o alerta e te avisa.
+- O **Docker** é a *garagem mágica* — em vez de você instalar cada peça na mão,
+  ele monta o carro inteirinho com **um comando só**.
+
+Ou seja: você roda **um comando**, abre o navegador e vê tudo funcionando. 🎉
+
+> **Você só precisa de duas coisas instaladas no seu computador:** o
+> [Docker](https://docs.docker.com/get-docker/) e o Docker Compose (já vem junto
+> nas versões atuais do Docker Desktop). Nada de Go, nada de configurar servidor.
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -172,6 +194,41 @@ DeepWatch/
     > As portas do host são configuráveis (`APP_HOST_PORT`, `GRAFANA_HOST_PORT`,
     > etc.) caso já estejam em uso na sua máquina — veja o `.env.example`.
 
+### 👶 Primeira vez? Faça este passeio guiado
+
+Depois de rodar `docker compose up -d --build`, siga este roteiro para *ver com os
+próprios olhos* cada peça funcionando:
+
+1. **Confirme que tudo subiu.** Rode `docker compose ps`. Você deve ver os serviços
+   `app`, `prometheus`, `grafana` e `alertmanager` com o status `Up` (ou `healthy`).
+   Se algum estiver reiniciando, use `docker compose logs <nome>` para ver o motivo.
+
+2. **Gere um pouco de movimento.** Abra `http://localhost:8080` no navegador e
+   atualize a página algumas vezes. Cada visita é uma "batida do coração" que a
+   aplicação registra. Tente também `http://localhost:8080/error` (ele erra de
+   propósito!) para criar alguns erros de exemplo.
+
+3. **Veja os números crus.** Acesse `http://localhost:8080/metrics`. Aquele monte de
+   texto são as métricas puras — é exatamente o que o Prometheus lê. Você não precisa
+   entender tudo; é só para saber "de onde vêm os dados".
+
+4. **Entre no painel bonito (Grafana).** Vá em `http://localhost:3000`, faça login
+   (usuário `admin`, senha que você colocou no `.env`). O dashboard já vem pronto:
+   observe os gráficos se mexerem conforme você atualiza a página da aplicação. 📈
+
+5. **Provoque um alerta (opcional e divertido).** Gere vários erros de uma vez e veja
+   o alerta acender no Alertmanager (`http://localhost:9093`) — instruções na seção
+   [🔬 Simulando Carga e Testando Alertas](#-simulando-carga-e-testando-alertas).
+
+6. **Terminou de brincar?** Desligue tudo com:
+   ```bash
+   docker compose down
+   # ou: make down
+   ```
+
+> 💡 **Dica:** nada aqui é permanente. Se algo bagunçar, `docker compose down` e
+> `docker compose up -d --build` de novo começa do zero.
+
 ## 🧑‍💻 Desenvolvimento
 
 Requer **Go 1.26+**. Os principais comandos estão no `Makefile` (rode `make help`):
@@ -200,6 +257,17 @@ O projeto usa **GitHub Actions**:
   `docker build` (sem push), com cache de módulos.
 - **Release** (`.github/workflows/release.yml`): ao criar uma tag `v*`,
   publica a imagem em `ghcr.io/apolinario0x21/deepwatch`.
+- **Security** (`.github/workflows/security.yml`): a cada push/PR e também
+  semanalmente (cron), roda três varreduras de segurança:
+  - `govulncheck` — procura vulnerabilidades conhecidas nas dependências Go;
+  - `gosec` — análise estática em busca de padrões inseguros no código;
+  - `Trivy` — escaneia a imagem Docker por CVEs (falha em `HIGH`/`CRITICAL`).
+- **Dependabot** (`.github/dependabot.yml`): abre PRs automáticos semanais para
+  manter dependências Go, GitHub Actions e imagens Docker sempre atualizadas.
+
+> **Em miúdos:** além de testar se o código *funciona* (CI), o projeto verifica
+> automaticamente se ele é *seguro* e se as dependências estão em dia — sem esforço
+> manual.
 
 ## 📊 Dashboards
 
