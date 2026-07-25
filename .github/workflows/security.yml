@@ -50,9 +50,11 @@ jobs:
           cache: true
 
       - name: Executa gosec
-        uses: securego/gosec@master
+        uses: securego/gosec@v2.28.0
         with:
-          args: ./...
+          # G404: os usos de math/rand/v2 apenas simulam latência/erros nos
+          # handlers de demonstração — não são sensíveis a segurança.
+          args: -exclude=G404 ./...
 
   trivy:
     name: Scan da imagem (Trivy)
@@ -75,7 +77,7 @@ jobs:
           cache-from: type=gha
 
       - name: Scan com Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: deepwatch:security-scan
           format: table
