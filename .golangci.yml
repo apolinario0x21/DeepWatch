@@ -1,0 +1,40 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # misspell não é usado: o projeto é comentado em PT-BR e o dicionário do
+  # linter é de inglês, gerando falsos positivos (ex.: "correspondente").
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - revive
+    - unconvert
+    - unparam
+  settings:
+    gosec:
+      # G404: o uso de math/rand/v2 é intencional (latência simulada, não
+      # segurança), então não exigimos crypto/rand.
+      excludes:
+        - G404
+  exclusions:
+    generated: lax
+    rules:
+      # Em código de teste, relaxa checagens de erro/segurança/HTTP.
+      - path: _test\.go
+        linters:
+          - bodyclose
+          - errcheck
+          - gosec
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/apolinario0x21/deepwatch

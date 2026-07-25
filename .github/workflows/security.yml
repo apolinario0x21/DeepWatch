@@ -1,0 +1,86 @@
+name: Security
+
+# Varredura de segurança: vulnerabilidades em dependências (govulncheck),
+# análise estática de código (gosec) e scan da imagem Docker (Trivy).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Roda toda segunda-feira às 06:00 UTC para pegar CVEs novos mesmo sem commits.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  govulncheck:
+    name: Vulnerabilidades (govulncheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Instala govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Executa govulncheck
+        run: govulncheck ./...
+
+  gosec:
+    name: Análise estática (gosec)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Executa gosec
+        uses: securego/gosec@v2.28.0
+        with:
+          # G404: os usos de math/rand/v2 apenas simulam latência/erros nos
+          # handlers de demonstração — não são sensíveis a segurança.
+          args: -exclude=G404 ./...
+
+  trivy:
+    name: Scan da imagem (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build da imagem (sem push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: deepwatch:security-scan
+          build-args: |
+            VERSION=security-${{ github.sha }}
+          cache-from: type=gha
+
+      - name: Scan com Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: deepwatch:security-scan
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
