@@ -1,6 +1,11 @@
 version: 2
+
+# Observação sobre open-pull-requests-limit: o limite é contado POR ecossistema,
+# não globalmente. Com três blocos a 5, o teto real era 15 PRs simultâneos — foi
+# assim que sete PRs se acumularam de uma vez. Os agrupamentos abaixo atacam a
+# causa (número de PRs gerados), e não apenas o sintoma.
 updates:
-  # Dependências Go (go.mod)
+  # --- Dependências Go (go.mod) ---
   - package-ecosystem: gomod
     directory: /
     schedule:
@@ -8,8 +13,23 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+    groups:
+      # Patch e minor entram juntos: são atualizações compatíveis por semver,
+      # de baixo risco, e o CI (build + vet + test -race + lint) é suficiente
+      # para validá-las em bloco.
+      go-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    # Atualizações MAJOR ficam deliberadamente fora do grupo: como nenhuma regra
+    # as captura, o Dependabot abre um PR individual para cada uma. São elas que
+    # podem trazer breaking change em código de aplicação (foi o caso do
+    # client_golang, que alimenta dashboards e alertas), então merecem revisão
+    # e CI isolados — é justamente o que o merge em lote impediu.
 
-  # GitHub Actions usadas nos workflows
+  # --- GitHub Actions usadas nos workflows ---
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -17,8 +37,15 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci"
+    groups:
+      # Um único PR por ciclo com todos os bumps de Actions, inclusive major.
+      # Actions não afetam o código da aplicação: ou o workflow roda, ou o
+      # próprio PR fica vermelho e o problema aparece antes do merge.
+      github-actions:
+        patterns:
+          - "*"
 
-  # Imagens base do Dockerfile
+  # --- Imagens base do Dockerfile ---
   - package-ecosystem: docker
     directory: /
     schedule:
@@ -26,3 +53,9 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "docker"
+    groups:
+      # O Dockerfile usa poucas imagens base (golang e distroless), então um
+      # PR único por ciclo mantém o ruído baixo sem perder rastreabilidade.
+      docker-images:
+        patterns:
+          - "*"
