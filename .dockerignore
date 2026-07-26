@@ -1,0 +1,52 @@
+# Arquivos que NÃO precisam ser enviados ao contexto de build do Docker.
+# O build só necessita de go.mod, go.sum e do código em cmd/ e internal/ —
+# tudo o mais aqui apenas deixa o `docker build` mais lento.
+#
+# Atenção: isto não afeta a imagem final (multi-stage copia só o binário),
+# mas reduz o contexto enviado ao daemon e evita que arquivos locais como
+# o .env entrem no estágio de build.
+
+# Histórico do Git (o maior item do contexto).
+.git
+.gitignore
+.gitattributes
+
+# Variáveis de ambiente locais — nunca devem entrar em um build.
+.env
+
+# Configuração de CI e do Dependabot.
+.github
+
+# Artefatos de build e cobertura gerados localmente.
+/bin/
+/dist/
+/goapp
+/deepwatch
+coverage.out
+coverage.html
+vendor/
+
+# Configuração da stack de observabilidade: usada pelo docker compose em
+# tempo de execução (via volumes), não pelo build da aplicação.
+prometheus/
+grafana/
+alertmanager/
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Ferramentas de desenvolvimento.
+Makefile
+.golangci.yml
+
+# Documentação e imagens.
+*.md
+LICENSE
+img.png
+
+# Editores, IDEs e sistema operacional.
+.idea/
+.vscode/
+.claude/
+.DS_Store
+Thumbs.db
