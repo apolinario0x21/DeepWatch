@@ -50,7 +50,7 @@ jobs:
           cache: true
 
       - name: Executa gosec
-        uses: securego/gosec@v2.28.0
+        uses: securego/gosec@v2.29.0
         with:
           # G404: os usos de math/rand/v2 apenas simulam latência/erros nos
           # handlers de demonstração — não são sensíveis a segurança.
